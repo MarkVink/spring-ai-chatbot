@@ -1,5 +1,8 @@
-# Created by https://www.toptal.com/developers/gitignore/api/osx,jetbrains,java,kotlin,react
-# Edit at https://www.toptal.com/developers/gitignore?templates=osx,jetbrains,java,kotlin,react
+# Created by https://www.toptal.com/developers/gitignore/api/osx,jetbrains,java,kotlin,react,dotenv
+# Edit at https://www.toptal.com/developers/gitignore?templates=osx,jetbrains,java,kotlin,react,dotenv
+
+### dotenv ###
+.env
 
 ### Java ###
 # Compiled class file
@@ -197,4 +200,4 @@ psd
 thumb
 sketch
 
-# End of https://www.toptal.com/developers/gitignore/api/osx,jetbrains,java,kotlin,react
+# End of https://www.toptal.com/developers/gitignore/api/osx,jetbrains,java,kotlin,react,dotenv
