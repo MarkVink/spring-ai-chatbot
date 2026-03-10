@@ -79,6 +79,11 @@ export function useChat(sessionId: string) {
     setIsLoading(false);
   }, []);
 
-  return { messages, isLoading, error, isHistoryLoaded, sendMessage, stopStreaming };
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    setError(null);
+  }, []);
+
+  return { messages, isLoading, error, isHistoryLoaded, sendMessage, stopStreaming, clearMessages };
 }
 
