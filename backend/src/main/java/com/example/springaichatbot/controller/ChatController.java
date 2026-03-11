@@ -4,6 +4,8 @@ import com.example.springaichatbot.service.ChatService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 
@@ -18,12 +20,13 @@ public class ChatController {
     }
 
     /**
-     * Blocking chat endpoint — returns the full assistant response.
+     * Blocking chat endpoint executed on a worker scheduler to keep Netty event-loop non-blocking.
      */
     @PostMapping
-    public ChatResponse chat(@RequestBody ChatRequest request) {
-        String response = chatService.chat(request.sessionId(), request.message());
-        return new ChatResponse(response);
+    public Mono<ChatResponse> chat(@RequestBody ChatRequest request) {
+        return Mono.fromCallable(() -> chatService.chat(request.sessionId(), request.message()))
+                .subscribeOn(Schedulers.boundedElastic())
+                .map(ChatResponse::new);
     }
 
     /**
@@ -42,4 +45,3 @@ public class ChatController {
         return chatService.getHistory(sessionId);
     }
 }
-

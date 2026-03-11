@@ -12,7 +12,7 @@ spring:
           max-tokens: 2048
 
 app:
-  system-prompt: "You are a helpful assistant. Be concise and clear in your responses."
+  system-prompt-file: classpath:prompts/system-prompt.txt
 
 server:
   port: ${SERVER_PORT:8080}
