@@ -44,7 +44,7 @@ export default function ChatInput({ onSend, onStop, isLoading }: ChatInputProps)
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           rows={1}
-          className="flex-1 resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm
+          className="chat-input-textarea flex-1 resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm
                      outline-none transition-colors
                      focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500"
         />
@@ -73,4 +73,3 @@ export default function ChatInput({ onSend, onStop, isLoading }: ChatInputProps)
     </div>
   );
 }
-
