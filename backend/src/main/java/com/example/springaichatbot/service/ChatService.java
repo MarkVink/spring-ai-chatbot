@@ -2,7 +2,6 @@ package com.example.springaichatbot.service;
 
 import com.example.springaichatbot.controller.MessageDto;
 import com.example.springaichatbot.controller.ModelGroup;
-import com.example.springaichatbot.tools.DateTimeTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -17,6 +16,8 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ChatService {
@@ -28,6 +29,8 @@ public class ChatService {
     private final List<String> remoteModels;
     private final List<String> localModels;
     private final String defaultModel;
+    private final String baseSystemPrompt;
+    private final Map<String, String> sessionReferenceDateTime = new ConcurrentHashMap<>();
 
     public ChatService(
             @Qualifier("remoteChatClient") ChatClient remoteChatClient,
@@ -45,6 +48,7 @@ public class ChatService {
         this.remoteModels = remoteModels.stream().map(String::trim).filter(StringUtils::hasText).toList();
         this.localModels = localModels.stream().map(String::trim).filter(StringUtils::hasText).toList();
         this.defaultModel = defaultModel;
+        this.baseSystemPrompt = readSystemPromptResource();
     }
 
     public List<ModelGroup> getAvailableModels() {
@@ -66,6 +70,10 @@ public class ChatService {
      * Returns the raw system prompt text.
      */
     public String getSystemPrompt() {
+        return baseSystemPrompt;
+    }
+
+    private String readSystemPromptResource() {
         try {
             return systemPromptResource.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
         } catch (java.io.IOException e) {
@@ -89,14 +97,14 @@ public class ChatService {
     public String chat(String sessionId, String userMessage, String model) {
         String resolvedModel = resolveModel(model);
         ChatClient client = getChatClientForModel(resolvedModel);
+        String systemPrompt = buildSystemPromptWithReferenceDateTime(sessionId);
 
         ChatClient.ChatClientRequestSpec request = client.prompt()
-                .system(systemPromptResource)
+                .system(systemPrompt)
                 .user(userMessage)
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())
-                .tools(new DateTimeTools())
                 .options(OpenAiChatOptions.builder().model(resolvedModel).build());
 
         return request.call().content();
@@ -108,14 +116,14 @@ public class ChatService {
     public Flux<String> chatStream(String sessionId, String userMessage, String model) {
         String resolvedModel = resolveModel(model);
         ChatClient client = getChatClientForModel(resolvedModel);
+        String systemPrompt = buildSystemPromptWithReferenceDateTime(sessionId);
 
         ChatClient.ChatClientRequestSpec request = client.prompt()
-                .system(systemPromptResource)
+                .system(systemPrompt)
                 .user(userMessage)
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())
-                .tools(new DateTimeTools())
                 .options(OpenAiChatOptions.builder().model(resolvedModel).build());
 
         return request.stream().content();
@@ -153,5 +161,17 @@ public class ChatService {
             return localChatClient;
         }
         return remoteChatClient;
+    }
+
+    private String buildSystemPromptWithReferenceDateTime(String sessionId) {
+        String referenceDateTime = sessionReferenceDateTime.computeIfAbsent(
+                sessionId,
+                ignored -> java.time.ZonedDateTime.now(java.time.ZoneId.of("Europe/Amsterdam")).toString()
+        );
+
+        return baseSystemPrompt
+                + "\n\nVaste tijdreferentie voor deze conversatie (Europe/Amsterdam): "
+                + referenceDateTime
+                + "\nGebruik deze tijdreferentie als enige basis voor relatieve datums in deze sessie.\n";
     }
 }
