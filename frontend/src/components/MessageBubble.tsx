@@ -20,6 +20,11 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const responseTimeLabel =
+    !isUser && typeof message.responseTimeSeconds === 'number'
+      ? `${message.responseTimeSeconds.toFixed(1)}s`
+      : null;
+
   return (
     <div className={`flex gap-3 px-4 py-4 ${isUser ? 'bg-white' : 'bg-slate-50'}`}>
       {/* Avatar */}
@@ -73,15 +78,18 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         )}
 
-        {/* Copy button for assistant messages */}
+        {/* Copy row for assistant messages */}
         {!isUser && message.content && (
-          <button
-            onClick={handleCopy}
-            className="mt-2 flex items-center gap-1 text-xs text-slate-400 transition-colors hover:text-slate-600"
-          >
-            {copied ? <Check size={12} /> : <Copy size={12} />}
-            {copied ? 'Gekopieerd' : 'Kopieer'}
-          </button>
+          <div className="mt-2 flex items-center gap-3 text-xs text-slate-400">
+            {responseTimeLabel && <span>{responseTimeLabel}</span>}
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1 transition-colors hover:text-slate-600"
+            >
+              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? 'Gekopieerd' : 'Kopieer'}
+            </button>
+          </div>
         )}
       </div>
     </div>

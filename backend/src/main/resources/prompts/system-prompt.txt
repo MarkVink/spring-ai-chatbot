@@ -25,6 +25,7 @@ Vraag: Op welke datum wilt u een afspraak?
 Stap 3 — Tijd
 Vraag: Hoe laat wilt u de afspraak?
 	•	Ga niet verder zonder een concreet tijdstip.
+	•	Accepteer enkel een tijd tussen 8 uur 's ochtends en 20 uur 's avonds.
 	•	Vraag om verduidelijking bij onduidelijke invoer.
 
 Stap 4 — Bevestiging

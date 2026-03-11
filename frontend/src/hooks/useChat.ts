@@ -36,6 +36,8 @@ export function useChat(sessionId: string) {
       const assistantMessage: Message = { role: 'assistant', content: '' };
       setMessages((prev) => [...prev, assistantMessage]);
 
+      const requestStartMs = performance.now();
+
       const controller = sendMessageStream(
         sessionId,
         content,
@@ -53,6 +55,18 @@ export function useChat(sessionId: string) {
           });
         },
         () => {
+          const elapsedSeconds = (performance.now() - requestStartMs) / 1000;
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last?.role === 'assistant' && last.content.trim().length > 0) {
+              updated[updated.length - 1] = {
+                ...last,
+                responseTimeSeconds: elapsedSeconds,
+              };
+            }
+            return updated;
+          });
           setIsLoading(false);
         },
         (err) => {
