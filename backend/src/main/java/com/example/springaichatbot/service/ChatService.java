@@ -1,6 +1,7 @@
 package com.example.springaichatbot.service;
 
 import com.example.springaichatbot.controller.MessageDto;
+import com.example.springaichatbot.tools.DateTimeTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -42,6 +43,7 @@ public class ChatService {
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())
+                .tools(new DateTimeTools())
                 .call()
                 .content();
     }
@@ -56,6 +58,7 @@ public class ChatService {
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())
+                .tools(new DateTimeTools())
                 .stream()
                 .content();
     }
