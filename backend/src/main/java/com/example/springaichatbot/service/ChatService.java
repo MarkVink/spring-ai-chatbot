@@ -7,7 +7,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,7 +17,6 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
@@ -127,17 +125,13 @@ public class ChatService {
      * Returns the full message history for the given session.
      */
     public List<MessageDto> getHistory(String sessionId) {
-        List<Message> messages = chatMemory.get(sessionId, Integer.MAX_VALUE);
-        if (messages == null) {
-            return List.of();
-        }
-        return messages.stream()
+        return chatMemory.get(sessionId).stream()
                 .filter(m -> m instanceof UserMessage || m instanceof AssistantMessage)
                 .map(m -> {
                     String role = m instanceof UserMessage ? "user" : "assistant";
                     return new MessageDto(role, m.getText());
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private String resolveModel(String requestedModel) {

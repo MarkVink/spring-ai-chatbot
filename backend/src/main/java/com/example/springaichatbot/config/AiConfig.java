@@ -1,8 +1,6 @@
 package com.example.springaichatbot.config;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,11 +23,6 @@ public class AiConfig {
 
     @Value("${app.openai-api-key-local:}")
     private String localApiKey;
-
-    @Bean
-    public ChatMemory chatMemory() {
-        return new InMemoryChatMemory();
-    }
 
     /**
      * OpenAiApi appends "/v1/chat/completions" to the base URL internally.
@@ -56,8 +49,14 @@ public class AiConfig {
             throw new IllegalStateException("Remote API key must be set via SPRING_AI_OPENAI_API_KEY or app.openai-api-key-remote");
         }
 
-        OpenAiApi remoteApi = new OpenAiApi(normalizeBaseUrl(remoteBaseUrl), remoteApiKey);
-        return new OpenAiChatModel(remoteApi);
+        OpenAiApi remoteApi = OpenAiApi.builder()
+                .baseUrl(normalizeBaseUrl(remoteBaseUrl))
+                .apiKey(remoteApiKey)
+                .build();
+
+        return OpenAiChatModel.builder()
+                .openAiApi(remoteApi)
+                .build();
     }
 
     /**
@@ -69,8 +68,13 @@ public class AiConfig {
             throw new IllegalStateException("Local base URL must be set via SPRING_AI_OPENAI_BASE_URL_LOCAL or app.openai-base-url-local");
         }
 
-        OpenAiApi localApi = new OpenAiApi(normalizeBaseUrl(localBaseUrl), StringUtils.hasText(localApiKey) ? localApiKey : "dummy");
-        return new OpenAiChatModel(localApi);
+        OpenAiApi localApi = OpenAiApi.builder()
+                .baseUrl(normalizeBaseUrl(remoteBaseUrl))
+                .apiKey(remoteApiKey)
+                .build();
+        return OpenAiChatModel.builder()
+                .openAiApi(localApi)
+                .build();
     }
 
     /**
