@@ -1,5 +1,35 @@
 # React + TypeScript + Vite
 
+This frontend uses Vite's dev server proxy for backend API calls during local development.
+
+## Local API proxy
+
+When you run the Vite dev server, requests to `/api` are proxied to the Spring Boot backend.
+By default the proxy target is `http://localhost:8080`.
+
+You can override the backend target with:
+
+```bash
+VITE_BACKEND_URL=http://localhost:8080
+```
+
+If you need to bypass the proxy and call a different API origin directly, set:
+
+```bash
+VITE_API_BASE_URL=https://your-api-host
+```
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+The frontend will call relative `/api/...` endpoints by default, so it works cleanly with the Vite proxy in development.
+
+---
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

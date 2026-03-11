@@ -1,9 +1,18 @@
 import type { Message } from '../types/chat';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
+function buildApiUrl(path: string): string {
+  if (!API_BASE_URL) {
+    return path;
+  }
+
+  const normalizedBase = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  return `${normalizedBase}${path}`;
+}
 
 export async function fetchHistory(sessionId: string): Promise<Message[]> {
-  const res = await fetch(`${API_BASE_URL}/api/chat/history/${sessionId}`);
+  const res = await fetch(buildApiUrl(`/api/chat/history/${sessionId}`));
   if (!res.ok) {
     throw new Error(`Failed to fetch history: ${res.status}`);
   }
@@ -15,7 +24,7 @@ export async function sendMessageBlocking(
   message: string,
   model?: string
 ): Promise<string> {
-  const res = await fetch(`${API_BASE_URL}/api/chat`, {
+  const res = await fetch(buildApiUrl('/api/chat'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId, message, model }),
@@ -68,7 +77,7 @@ export function sendMessageStream(
 ): AbortController {
   const controller = new AbortController();
 
-  fetch(`${API_BASE_URL}/api/chat/stream`, {
+  fetch(buildApiUrl('/api/chat/stream'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId, message, model }),
@@ -152,7 +161,7 @@ export interface AvailableModelsResponse {
 }
 
 export async function fetchModels(): Promise<AvailableModelsResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/chat/models`);
+  const res = await fetch(buildApiUrl('/api/chat/models'));
   if (!res.ok) {
     throw new Error(`Failed to fetch models: ${res.status}`);
   }
