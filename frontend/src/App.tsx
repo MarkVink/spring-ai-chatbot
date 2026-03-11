@@ -3,7 +3,7 @@ import { useChat } from './hooks/useChat';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
 import { fetchModels, type ModelGroup } from './api/chatApi';
-import { Bot, AlertCircle, Trash2, Sparkles } from 'lucide-react';
+import { CalendarCheck, AlertCircle, PlusCircle, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 const FALLBACK_GROUPS: ModelGroup[] = [
@@ -19,21 +19,11 @@ export default function App() {
     fetchModels()
       .then((response) => {
         const groups = response.groups?.filter((g) => g.models?.length > 0) ?? [];
-        if (groups.length === 0) {
-          return;
-        }
-
+        if (groups.length === 0) return;
         setModelGroups(groups);
         if (response.defaultModel) {
           const modelExists = groups.some((g) => g.models.includes(response.defaultModel));
-          if (modelExists) {
-            setSelectedModel(response.defaultModel);
-          } else {
-            const firstModel = groups[0]?.models[0];
-            if (firstModel) {
-              setSelectedModel(firstModel);
-            }
-          }
+          setSelectedModel(modelExists ? response.defaultModel : (groups[0]?.models[0] ?? response.defaultModel));
         }
       })
       .catch((err) => {
@@ -53,30 +43,34 @@ export default function App() {
 
   if (!isHistoryLoaded) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="flex items-center gap-2 text-gray-500">
-          <Bot size={24} className="animate-pulse" />
-          <span>Loading conversation...</span>
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-2 text-slate-500">
+          <CalendarCheck size={24} className="animate-pulse text-teal-600" />
+          <span>Gesprek laden...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
+    <div className="flex h-screen flex-col bg-slate-50">
       {/* Header */}
-      <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-6 py-3 shadow-sm">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white">
-          <Bot size={20} />
-        </div>
-        <div className="flex-1">
-          <h1 className="text-base font-semibold text-gray-900">Spring AI Chatbot</h1>
-          <p className="text-xs text-gray-500">Powered by Spring AI</p>
+      <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-6 py-3 shadow-sm">
+        {/* Logo mark */}
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-600 text-white shadow-sm">
+          <CalendarCheck size={22} />
         </div>
 
-        <div className="hidden items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 sm:flex">
-          <Sparkles size={14} className="text-blue-600" />
-          <label className="text-xs font-medium text-gray-500" htmlFor="header-model-select">
+        {/* Title */}
+        <div className="flex-1">
+          <h1 className="text-base font-semibold text-slate-900">Afspraak Assistent</h1>
+          <p className="text-xs text-slate-400">Plan eenvoudig uw afspraak</p>
+        </div>
+
+        {/* Model selector */}
+        <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 sm:flex">
+          <Sparkles size={13} className="text-teal-600" />
+          <label className="text-xs font-medium text-slate-400" htmlFor="header-model-select">
             Model
           </label>
           <select
@@ -84,10 +78,13 @@ export default function App() {
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
             disabled={isLoading}
-            className="min-w-44 border-0 bg-transparent pr-6 text-sm text-gray-700 outline-none disabled:cursor-not-allowed disabled:text-gray-400"
+            className="min-w-44 border-0 bg-transparent pr-6 text-sm text-slate-700 outline-none disabled:cursor-not-allowed disabled:text-slate-400"
           >
             {modelGroups.map((group) => (
-              <optgroup key={group.type} label={`${group.type.charAt(0).toUpperCase() + group.type.slice(1)} Models`}>
+              <optgroup
+                key={group.type}
+                label={group.type === 'local' ? '🖥  Lokaal' : '☁  Extern'}
+              >
                 {group.models.map((model) => (
                   <option key={model} value={model}>
                     {model}
@@ -98,14 +95,18 @@ export default function App() {
           </select>
         </div>
 
+        {/* New conversation */}
         <button
           onClick={handleClearSession}
           disabled={messages.length === 0}
-          title="Clear conversation"
-          className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:bg-white disabled:hover:text-gray-600"
+          title="Nieuw gesprek starten"
+          className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600
+                     transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700
+                     disabled:cursor-not-allowed disabled:opacity-40
+                     disabled:hover:border-slate-200 disabled:hover:bg-white disabled:hover:text-slate-600"
         >
-          <Trash2 size={14} />
-          New chat
+          <PlusCircle size={14} />
+          Nieuw gesprek
         </button>
       </header>
 

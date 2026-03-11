@@ -41,25 +41,25 @@ export default function ChatInput({
   };
 
   return (
-    <div className="border-t border-gray-200 bg-white p-4">
+    <div className="border-t border-slate-200 bg-white p-4">
       <div className="mx-auto flex max-w-3xl items-end gap-3">
         <textarea
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
+          placeholder="Typ hier uw bericht…"
           rows={1}
-          className="chat-input-textarea flex-1 resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm
+          className="chat-input-textarea flex-1 resize-none rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm
                      outline-none transition-colors
-                     focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500"
+                     focus:border-teal-500 focus:bg-white focus:ring-1 focus:ring-teal-500"
         />
         {isLoading ? (
           <button
             onClick={onStop}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl
                        bg-red-500 text-white transition-colors hover:bg-red-600"
-            title="Stop generating"
+            title="Stoppen"
           >
             <Square size={18} />
           </button>
@@ -68,9 +68,9 @@ export default function ChatInput({
             onClick={handleSubmit}
             disabled={!input.trim()}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl
-                       bg-blue-600 text-white transition-colors hover:bg-blue-700
-                       disabled:cursor-not-allowed disabled:bg-gray-300"
-            title="Send message"
+                       bg-teal-600 text-white transition-colors hover:bg-teal-700
+                       disabled:cursor-not-allowed disabled:bg-slate-300"
+            title="Versturen"
           >
             <Send size={18} />
           </button>
