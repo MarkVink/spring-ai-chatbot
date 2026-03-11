@@ -1,6 +1,7 @@
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/SpringAiChatbotApplication.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/config/AiConfig.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/config/WebConfig.java
+/Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/AvailableModelsResponse.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/ChatController.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/ChatRequest.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/ChatResponse.java

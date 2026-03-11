@@ -2,10 +2,36 @@ import { useSession } from './hooks/useSession';
 import { useChat } from './hooks/useChat';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
-import { Bot, AlertCircle, Trash2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { fetchModels } from './api/chatApi';
+import { Bot, AlertCircle, Trash2, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+
+const FALLBACK_MODELS = ['gpt-4o-mini', 'docker.io/ai/qwen3:latest'];
 
 export default function App() {
+  const [modelOptions, setModelOptions] = useState<string[]>(FALLBACK_MODELS);
+  const [selectedModel, setSelectedModel] = useState(FALLBACK_MODELS[0]);
+
+  useEffect(() => {
+    fetchModels()
+      .then((response) => {
+        const models = response.models?.filter(Boolean) ?? [];
+        if (models.length === 0) {
+          return;
+        }
+
+        setModelOptions(models);
+        if (response.defaultModel && models.includes(response.defaultModel)) {
+          setSelectedModel(response.defaultModel);
+        } else {
+          setSelectedModel(models[0]);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to fetch models from backend, using fallback models.', err);
+      });
+  }, []);
+
   const { sessionId, clearSession } = useSession();
   const { messages, isLoading, error, isHistoryLoaded, sendMessage, stopStreaming, clearMessages } =
     useChat(sessionId);
@@ -38,6 +64,27 @@ export default function App() {
           <h1 className="text-base font-semibold text-gray-900">Spring AI Chatbot</h1>
           <p className="text-xs text-gray-500">Powered by Spring AI</p>
         </div>
+
+        <div className="hidden items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 sm:flex">
+          <Sparkles size={14} className="text-blue-600" />
+          <label className="text-xs font-medium text-gray-500" htmlFor="header-model-select">
+            Model
+          </label>
+          <select
+            id="header-model-select"
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            disabled={isLoading}
+            className="min-w-44 border-0 bg-transparent pr-6 text-sm text-gray-700 outline-none disabled:cursor-not-allowed disabled:text-gray-400"
+          >
+            {modelOptions.map((model) => (
+              <option key={model} value={model}>
+                {model}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           onClick={handleClearSession}
           disabled={messages.length === 0}
@@ -61,8 +108,12 @@ export default function App() {
       <ChatWindow messages={messages} isLoading={isLoading} />
 
       {/* Input */}
-      <ChatInput onSend={sendMessage} onStop={stopStreaming} isLoading={isLoading} />
+      <ChatInput
+        onSend={sendMessage}
+        onStop={stopStreaming}
+        isLoading={isLoading}
+        selectedModel={selectedModel}
+      />
     </div>
   );
 }
-

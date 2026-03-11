@@ -2,12 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Square } from 'lucide-react';
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, model?: string) => void;
   onStop: () => void;
   isLoading: boolean;
+  selectedModel: string;
 }
 
-export default function ChatInput({ onSend, onStop, isLoading }: ChatInputProps) {
+export default function ChatInput({
+  onSend,
+  onStop,
+  isLoading,
+  selectedModel,
+}: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -22,7 +28,7 @@ export default function ChatInput({ onSend, onStop, isLoading }: ChatInputProps)
 
   const handleSubmit = () => {
     if (input.trim() && !isLoading) {
-      onSend(input.trim());
+      onSend(input.trim(), selectedModel || undefined);
       setInput('');
     }
   };

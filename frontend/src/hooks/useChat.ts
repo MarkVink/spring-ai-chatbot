@@ -23,7 +23,7 @@ export function useChat(sessionId: string) {
   }, [sessionId]);
 
   const sendMessage = useCallback(
-    (content: string) => {
+    (content: string, model?: string) => {
       if (!content.trim() || isLoading) return;
 
       setError(null);
@@ -66,7 +66,8 @@ export function useChat(sessionId: string) {
             }
             return prev;
           });
-        }
+        },
+        model
       );
 
       abortRef.current = controller;
@@ -86,4 +87,3 @@ export function useChat(sessionId: string) {
 
   return { messages, isLoading, error, isHistoryLoaded, sendMessage, stopStreaming, clearMessages };
 }
-

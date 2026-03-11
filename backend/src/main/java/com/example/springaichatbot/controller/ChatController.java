@@ -25,7 +25,7 @@ public class ChatController {
      */
     @PostMapping
     public Mono<ChatResponse> chat(@RequestBody ChatRequest request) {
-        return Mono.fromCallable(() -> chatService.chat(request.sessionId(), request.message()))
+        return Mono.fromCallable(() -> chatService.chat(request.sessionId(), request.message(), request.model()))
                 .subscribeOn(Schedulers.boundedElastic())
                 .map(ChatResponse::new);
     }
@@ -35,10 +35,15 @@ public class ChatController {
      */
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<ChatStreamChunk>> chatStream(@RequestBody ChatRequest request) {
-        return chatService.chatStream(request.sessionId(), request.message())
+        return chatService.chatStream(request.sessionId(), request.message(), request.model())
                 .map(token -> ServerSentEvent.builder(new ChatStreamChunk(token))
                         .event("token")
                         .build());
+    }
+
+    @GetMapping("/models")
+    public AvailableModelsResponse models() {
+        return new AvailableModelsResponse(chatService.getAvailableModels(), chatService.getDefaultModel());
     }
 
     /**

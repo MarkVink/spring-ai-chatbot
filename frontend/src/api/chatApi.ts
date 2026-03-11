@@ -12,12 +12,13 @@ export async function fetchHistory(sessionId: string): Promise<Message[]> {
 
 export async function sendMessageBlocking(
   sessionId: string,
-  message: string
+  message: string,
+  model?: string
 ): Promise<string> {
   const res = await fetch(`${API_BASE_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionId, message }),
+    body: JSON.stringify({ sessionId, message, model }),
   });
   if (!res.ok) {
     throw new Error(`Chat request failed: ${res.status}`);
@@ -62,14 +63,15 @@ export function sendMessageStream(
   message: string,
   onToken: (token: string) => void,
   onDone: () => void,
-  onError: (error: Error) => void
+  onError: (error: Error) => void,
+  model?: string
 ): AbortController {
   const controller = new AbortController();
 
   fetch(`${API_BASE_URL}/api/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionId, message }),
+    body: JSON.stringify({ sessionId, message, model }),
     signal: controller.signal,
   })
     .then(async (res) => {
@@ -142,4 +144,17 @@ export function sendMessageStream(
     });
 
   return controller;
+}
+
+export interface AvailableModelsResponse {
+  models: string[];
+  defaultModel: string;
+}
+
+export async function fetchModels(): Promise<AvailableModelsResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/chat/models`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch models: ${res.status}`);
+  }
+  return res.json();
 }
