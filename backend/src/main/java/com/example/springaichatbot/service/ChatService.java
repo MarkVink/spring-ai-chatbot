@@ -8,6 +8,7 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -19,16 +20,16 @@ public class ChatService {
 
     private final ChatClient chatClient;
     private final ChatMemory chatMemory;
-    private final String systemPrompt;
+    private final Resource systemPromptResource;
 
     public ChatService(
             ChatClient chatClient,
             ChatMemory chatMemory,
-            @Value("${app.system-prompt:You are a helpful assistant.}") String systemPrompt
+            @Value("${app.system-prompt-file:classpath:prompts/system-prompt.txt}") Resource systemPromptResource
     ) {
         this.chatClient = chatClient;
         this.chatMemory = chatMemory;
-        this.systemPrompt = systemPrompt;
+        this.systemPromptResource = systemPromptResource;
     }
 
     /**
@@ -36,7 +37,7 @@ public class ChatService {
      */
     public String chat(String sessionId, String userMessage) {
         return chatClient.prompt()
-                .system(systemPrompt)
+                .system(systemPromptResource)
                 .user(userMessage)
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
@@ -50,7 +51,7 @@ public class ChatService {
      */
     public Flux<String> chatStream(String sessionId, String userMessage) {
         return chatClient.prompt()
-                .system(systemPrompt)
+                .system(systemPromptResource)
                 .user(userMessage)
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
@@ -76,4 +77,3 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 }
-
