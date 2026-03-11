@@ -2,6 +2,7 @@ package com.example.springaichatbot.controller;
 
 import com.example.springaichatbot.service.ChatService;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,11 +31,14 @@ public class ChatController {
     }
 
     /**
-     * Streaming chat endpoint — returns SSE text/event-stream.
+     * Streaming chat endpoint — returns SSE JSON chunks to preserve token boundaries and whitespace.
      */
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> chatStream(@RequestBody ChatRequest request) {
-        return chatService.chatStream(request.sessionId(), request.message());
+    public Flux<ServerSentEvent<ChatStreamChunk>> chatStream(@RequestBody ChatRequest request) {
+        return chatService.chatStream(request.sessionId(), request.message())
+                .map(token -> ServerSentEvent.builder(new ChatStreamChunk(token))
+                        .event("token")
+                        .build());
     }
 
     /**

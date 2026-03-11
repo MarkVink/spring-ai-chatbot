@@ -1,4 +1,5 @@
 com/example/springaichatbot/controller/ChatController.class
+com/example/springaichatbot/controller/ChatStreamChunk.class
 com/example/springaichatbot/controller/MessageDto.class
 com/example/springaichatbot/SpringAiChatbotApplication.class
 com/example/springaichatbot/controller/ChatResponse.class

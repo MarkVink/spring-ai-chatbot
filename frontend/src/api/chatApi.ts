@@ -26,6 +26,37 @@ export async function sendMessageBlocking(
   return data.message;
 }
 
+function parseSseEvent(rawEvent: string): { event?: string; data: string } | null {
+  const dataLines: string[] = [];
+  let eventType: string | undefined;
+
+  for (const line of rawEvent.split('\n')) {
+    if (line.startsWith('event:')) {
+      const value = line.slice(6);
+      eventType = value.startsWith(' ') ? value.slice(1) : value;
+      continue;
+    }
+
+    if (!line.startsWith('data:')) {
+      continue;
+    }
+
+    // Per SSE spec, there can be one optional space after ':'.
+    const payload = line.charAt(5) === ' ' ? line.slice(6) : line.slice(5);
+    dataLines.push(payload.endsWith('\r') ? payload.slice(0, -1) : payload);
+  }
+
+  if (dataLines.length === 0) {
+    return null;
+  }
+
+  return { event: eventType, data: dataLines.join('\n') };
+}
+
+interface StreamChunk {
+  token: string;
+}
+
 export function sendMessageStream(
   sessionId: string,
   message: string,
@@ -58,29 +89,47 @@ export function sendMessageStream(
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
 
-        // SSE format: lines starting with "data:"
-        const lines = buffer.split('\n');
-        // Keep the last potentially incomplete line in the buffer
-        buffer = lines.pop() || '';
+        let eventBoundary = buffer.indexOf('\n\n');
+        while (eventBoundary !== -1) {
+          const rawEvent = buffer.slice(0, eventBoundary);
+          buffer = buffer.slice(eventBoundary + 2);
 
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('data:')) {
-            const data = trimmed.slice(5);
-            // Empty data signals end of stream in some SSE implementations
-            if (data.trim() === '') continue;
-            onToken(data);
+          const sse = parseSseEvent(rawEvent);
+          if (!sse || sse.data === '' || sse.data === '[DONE]') {
+            eventBoundary = buffer.indexOf('\n\n');
+            continue;
           }
+
+          if (!sse.event || sse.event === 'token') {
+            try {
+              const chunk = JSON.parse(sse.data) as StreamChunk;
+              if (typeof chunk.token === 'string' && chunk.token.length > 0) {
+                onToken(chunk.token);
+              }
+            } catch {
+              // Backward compatibility with plain string SSE payloads.
+              onToken(sse.data);
+            }
+          }
+
+          eventBoundary = buffer.indexOf('\n\n');
         }
       }
 
-      // Process any remaining buffer
-      if (buffer.trim().startsWith('data:')) {
-        const data = buffer.trim().slice(5);
-        if (data.trim() !== '') {
-          onToken(data);
+      // Handle final event if stream closes without a trailing separator.
+      const trailing = parseSseEvent(buffer.replace(/\r\n/g, '\n'));
+      if (trailing && trailing.data !== '' && trailing.data !== '[DONE]') {
+        if (!trailing.event || trailing.event === 'token') {
+          try {
+            const chunk = JSON.parse(trailing.data) as StreamChunk;
+            if (typeof chunk.token === 'string' && chunk.token.length > 0) {
+              onToken(chunk.token);
+            }
+          } catch {
+            onToken(trailing.data);
+          }
         }
       }
 
@@ -94,4 +143,3 @@ export function sendMessageStream(
 
   return controller;
 }
-
