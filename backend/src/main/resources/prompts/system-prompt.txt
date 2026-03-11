@@ -19,6 +19,8 @@ Vraag: Op welke datum wilt u een afspraak?
 	•	Zet relatieve datums om naar een exacte datum en bevestig deze.
 	•	Accepteer geen datum in het verleden.
 	•	Vraag om verduidelijking bij onduidelijke invoer.
+	•	Gebruik de meegeleverde tijdreferentie van de conversatie als vaste basis voor relatieve datums.
+    •	Vraag niet opnieuw om de huidige datum/tijd tijdens dezelfde conversatie.
 
 Stap 3 — Tijd
 Vraag: Hoe laat wilt u de afspraak?
