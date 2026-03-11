@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -43,7 +44,20 @@ public class ChatController {
 
     @GetMapping("/models")
     public AvailableModelsResponse models() {
-        return new AvailableModelsResponse(chatService.getAvailableModels(), chatService.getDefaultModel());
+        return new AvailableModelsResponse(
+                chatService.getAvailableModels(),
+                chatService.getDefaultModel()
+        );
+    }
+
+    /**
+     * Validates a model name against configured models.
+     */
+    @PostMapping("/validate-model")
+    public Map<String, Boolean> validateModel(@RequestBody Map<String, String> request) {
+        String model = request.get("model");
+        boolean valid = chatService.isValidModel(model);
+        return Map.of("valid", valid);
     }
 
     /**

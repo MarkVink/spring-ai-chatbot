@@ -7,5 +7,6 @@
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/ChatResponse.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/ChatStreamChunk.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/MessageDto.java
+/Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/controller/ModelGroup.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/service/ChatService.java
 /Users/markvink/Development/workspace-ai/spring-ai-chatbot/backend/src/main/java/com/example/springaichatbot/tools/DateTimeTools.java

@@ -155,8 +155,13 @@ export function sendMessageStream(
   return controller;
 }
 
-export interface AvailableModelsResponse {
+export interface ModelGroup {
+  type: 'remote' | 'local';
   models: string[];
+}
+
+export interface AvailableModelsResponse {
+  groups: ModelGroup[];
   defaultModel: string;
 }
 

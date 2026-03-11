@@ -3,18 +3,23 @@ spring:
     import: "optional:file:.env[.properties],optional:file:backend/.env[.properties]"
   ai:
     openai:
-      base-url: ${SPRING_AI_OPENAI_BASE_URL:}
-      api-key: ${SPRING_AI_OPENAI_API_KEY:}
+      base-url: ${SPRING_AI_OPENAI_BASE_URL}
+      api-key: ${SPRING_AI_OPENAI_API_KEY}
       chat:
         options:
           model: ${SPRING_AI_OPENAI_CHAT_MODEL:gpt-4o-mini}
           temperature: 0.7
-          max-tokens: 2048
+          max-tokens: 4096
 
 app:
   system-prompt-file: classpath:prompts/system-prompt.txt
   default-model: ${SPRING_AI_OPENAI_CHAT_MODEL:gpt-4o-mini}
-  models: ${APP_MODELS:gpt-4o-mini}
+  models-remote: ${APP_MODELS_REMOTE:gpt-4o-mini}
+  models-local: ${APP_MODELS_LOCAL}
+  openai-base-url-remote: ${SPRING_AI_OPENAI_BASE_URL}
+  openai-api-key-remote: ${SPRING_AI_OPENAI_API_KEY}
+  openai-base-url-local: ${SPRING_AI_OPENAI_BASE_URL_LOCAL}
+  openai-api-key-local: ${SPRING_AI_OPENAI_API_KEY_LOCAL}
 
 server:
   port: ${SERVER_PORT:8080}

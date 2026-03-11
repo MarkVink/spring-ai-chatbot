@@ -6,5 +6,7 @@ com/example/springaichatbot/service/ChatService.class
 com/example/springaichatbot/controller/ChatStreamChunk.class
 com/example/springaichatbot/controller/MessageDto.class
 com/example/springaichatbot/SpringAiChatbotApplication.class
+com/example/springaichatbot/tools/DateTimeTools.class
 com/example/springaichatbot/controller/AvailableModelsResponse.class
 com/example/springaichatbot/controller/ChatResponse.class
+com/example/springaichatbot/controller/ModelGroup.class

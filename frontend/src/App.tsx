@@ -2,29 +2,38 @@ import { useSession } from './hooks/useSession';
 import { useChat } from './hooks/useChat';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
-import { fetchModels } from './api/chatApi';
+import { fetchModels, type ModelGroup } from './api/chatApi';
 import { Bot, AlertCircle, Trash2, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-const FALLBACK_MODELS = ['gpt-4o-mini', 'docker.io/ai/qwen3:latest'];
+const FALLBACK_GROUPS: ModelGroup[] = [
+  { type: 'remote', models: ['gpt-4o-mini', 'gpt-4'] },
+  { type: 'local', models: ['docker.io/ai/qwen3:latest'] },
+];
 
 export default function App() {
-  const [modelOptions, setModelOptions] = useState<string[]>(FALLBACK_MODELS);
-  const [selectedModel, setSelectedModel] = useState(FALLBACK_MODELS[0]);
+  const [modelGroups, setModelGroups] = useState<ModelGroup[]>(FALLBACK_GROUPS);
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
 
   useEffect(() => {
     fetchModels()
       .then((response) => {
-        const models = response.models?.filter(Boolean) ?? [];
-        if (models.length === 0) {
+        const groups = response.groups?.filter((g) => g.models?.length > 0) ?? [];
+        if (groups.length === 0) {
           return;
         }
 
-        setModelOptions(models);
-        if (response.defaultModel && models.includes(response.defaultModel)) {
-          setSelectedModel(response.defaultModel);
-        } else {
-          setSelectedModel(models[0]);
+        setModelGroups(groups);
+        if (response.defaultModel) {
+          const modelExists = groups.some((g) => g.models.includes(response.defaultModel));
+          if (modelExists) {
+            setSelectedModel(response.defaultModel);
+          } else {
+            const firstModel = groups[0]?.models[0];
+            if (firstModel) {
+              setSelectedModel(firstModel);
+            }
+          }
         }
       })
       .catch((err) => {
@@ -77,10 +86,14 @@ export default function App() {
             disabled={isLoading}
             className="min-w-44 border-0 bg-transparent pr-6 text-sm text-gray-700 outline-none disabled:cursor-not-allowed disabled:text-gray-400"
           >
-            {modelOptions.map((model) => (
-              <option key={model} value={model}>
-                {model}
-              </option>
+            {modelGroups.map((group) => (
+              <optgroup key={group.type} label={`${group.type.charAt(0).toUpperCase() + group.type.slice(1)} Models`}>
+                {group.models.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
