@@ -42,6 +42,12 @@ public class ChatController {
                         .build());
     }
 
+    @GetMapping("/system-prompt")
+    public Mono<String> systemPrompt() {
+        return Mono.fromCallable(chatService::getSystemPrompt)
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
     @GetMapping("/models")
     public AvailableModelsResponse models() {
         return new AvailableModelsResponse(

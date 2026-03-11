@@ -65,6 +65,17 @@ public class ChatService {
     }
 
     /**
+     * Returns the raw system prompt text.
+     */
+    public String getSystemPrompt() {
+        try {
+            return systemPromptResource.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Could not read system prompt", e);
+        }
+    }
+
+    /**
      * Determines if a model is valid and exists in the configured lists.
      */
     public boolean isValidModel(String model) {

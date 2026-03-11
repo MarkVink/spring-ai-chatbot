@@ -2,9 +2,10 @@ import { useSession } from './hooks/useSession';
 import { useChat } from './hooks/useChat';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
-import { fetchModels, type ModelGroup } from './api/chatApi';
-import { CalendarCheck, AlertCircle, PlusCircle, Sparkles } from 'lucide-react';
+import { fetchModels, fetchSystemPrompt, type ModelGroup } from './api/chatApi';
+import { CalendarCheck, AlertCircle, PlusCircle, Sparkles, ClipboardList } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import SystemPromptModal from './components/SystemPromptModal';
 
 const FALLBACK_GROUPS: ModelGroup[] = [
   { type: 'remote', models: ['gpt-4o-mini', 'gpt-4'] },
@@ -14,6 +15,14 @@ const FALLBACK_GROUPS: ModelGroup[] = [
 export default function App() {
   const [modelGroups, setModelGroups] = useState<ModelGroup[]>(FALLBACK_GROUPS);
   const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
+  const [systemPrompt, setSystemPrompt] = useState<string>('');
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  useEffect(() => {
+    fetchSystemPrompt()
+      .then(setSystemPrompt)
+      .catch((err) => console.warn('Failed to fetch system prompt', err));
+  }, []);
 
   useEffect(() => {
     fetchModels()
@@ -67,6 +76,19 @@ export default function App() {
           <p className="text-xs text-slate-400">Plan eenvoudig uw afspraak</p>
         </div>
 
+        {/* System prompt button — styled like the model selector pill */}
+        {systemPrompt && (
+          <button
+            onClick={() => setShowPrompt(true)}
+            title="Bekijk assistentinstructies"
+            className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-400
+                       transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-600 sm:flex"
+          >
+            <ClipboardList size={13} className="text-teal-600" />
+            <span className="text-xs font-medium text-slate-400">Prompt</span>
+          </button>
+        )}
+
         {/* Model selector */}
         <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 sm:flex">
           <Sparkles size={13} className="text-teal-600" />
@@ -83,7 +105,7 @@ export default function App() {
             {modelGroups.map((group) => (
               <optgroup
                 key={group.type}
-                label={group.type === 'local' ? '🖥  Lokaal' : '☁  Extern'}
+                label={group.type === 'local' ? 'Lokaal' : 'Extern'}
               >
                 {group.models.map((model) => (
                   <option key={model} value={model}>
@@ -128,6 +150,11 @@ export default function App() {
         isLoading={isLoading}
         selectedModel={selectedModel}
       />
+
+      {/* System prompt modal */}
+      {showPrompt && (
+        <SystemPromptModal prompt={systemPrompt} onClose={() => setShowPrompt(false)} />
+      )}
     </div>
   );
 }

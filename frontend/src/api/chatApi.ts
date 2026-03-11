@@ -155,6 +155,14 @@ export function sendMessageStream(
   return controller;
 }
 
+export async function fetchSystemPrompt(): Promise<string> {
+  const res = await fetch(buildApiUrl('/api/chat/system-prompt'));
+  if (!res.ok) {
+    throw new Error(`Failed to fetch system prompt: ${res.status}`);
+  }
+  return res.text();
+}
+
 export interface ModelGroup {
   type: 'remote' | 'local';
   models: string[];
