@@ -141,7 +141,11 @@ export default function App() {
       )}
 
       {/* Chat area */}
-      <ChatWindow messages={messages} isLoading={isLoading} />
+      <ChatWindow
+        messages={messages}
+        isLoading={isLoading}
+        onSubmitAddress={(message) => sendMessage(message, selectedModel)}
+      />
 
       {/* Input */}
       <ChatInput

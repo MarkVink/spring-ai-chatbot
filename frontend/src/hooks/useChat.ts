@@ -2,18 +2,58 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Message } from '../types/chat';
 import { fetchHistory, sendMessageStream } from '../api/chatApi';
 
+const INPUT_ADDRESS_REGEX = /\[\[INPUT:address(?:\|label=([^\]]*))?\]\]/i;
+const INPUT_START_MARKER = '[[INPUT:';
+
+function parseAssistantContent(rawContent: string): Pick<Message, 'content' | 'specialInput'> {
+  const match = rawContent.match(INPUT_ADDRESS_REGEX);
+
+  return {
+    content: stripInputDirective(rawContent),
+    specialInput: match
+      ? {
+          type: 'address',
+          label: match[1]?.trim() || 'Vul uw postcode en huisnummer in',
+        }
+      : undefined,
+  };
+}
+
+function stripInputDirective(rawContent: string): string {
+  const startIndex = rawContent.indexOf(INPUT_START_MARKER);
+  if (startIndex === -1) {
+    return rawContent;
+  }
+
+  return rawContent.slice(0, startIndex).trimEnd();
+}
+
+function normalizeHistoryMessages(history: Message[]): Message[] {
+  return history.map((message) => {
+    if (message.role !== 'assistant') {
+      return message;
+    }
+
+    return {
+      ...message,
+      ...parseAssistantContent(message.content),
+    };
+  });
+}
+
 export function useChat(sessionId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const streamRawContentRef = useRef('');
 
   // Load history on mount
   useEffect(() => {
     fetchHistory(sessionId)
       .then((history) => {
-        setMessages(history);
+        setMessages(normalizeHistoryMessages(history));
         setIsHistoryLoaded(true);
       })
       .catch((err) => {
@@ -27,6 +67,7 @@ export function useChat(sessionId: string) {
       if (!content.trim() || isLoading) return;
 
       setError(null);
+      streamRawContentRef.current = '';
 
       const userMessage: Message = { role: 'user', content };
       setMessages((prev) => [...prev, userMessage]);
@@ -42,13 +83,16 @@ export function useChat(sessionId: string) {
         sessionId,
         content,
         (token) => {
+          streamRawContentRef.current += token;
+          const parsedAssistantMessage = parseAssistantContent(streamRawContentRef.current);
+
           setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
             if (last.role === 'assistant') {
               updated[updated.length - 1] = {
                 ...last,
-                content: last.content + token,
+                ...parsedAssistantMessage,
               };
             }
             return updated;
@@ -56,6 +100,7 @@ export function useChat(sessionId: string) {
         },
         () => {
           const elapsedSeconds = (performance.now() - requestStartMs) / 1000;
+          streamRawContentRef.current = '';
           setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
@@ -70,6 +115,7 @@ export function useChat(sessionId: string) {
           setIsLoading(false);
         },
         (err) => {
+          streamRawContentRef.current = '';
           setError(err.message || 'Something went wrong');
           setIsLoading(false);
           // Remove the empty assistant placeholder on error
@@ -91,6 +137,7 @@ export function useChat(sessionId: string) {
 
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
+    streamRawContentRef.current = '';
     setIsLoading(false);
   }, []);
 

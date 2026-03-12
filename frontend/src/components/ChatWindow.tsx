@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import type { Message } from '../types/chat';
+import AddressInput from './AddressInput';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import { CalendarCheck, MapPin, Clock, CheckCircle2 } from 'lucide-react';
@@ -7,9 +8,10 @@ import { CalendarCheck, MapPin, Clock, CheckCircle2 } from 'lucide-react';
 interface ChatWindowProps {
   messages: Message[];
   isLoading: boolean;
+  onSubmitAddress: (message: string) => void;
 }
 
-export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
+export default function ChatWindow({ messages, isLoading, onSubmitAddress }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,9 +61,24 @@ export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto max-w-3xl divide-y divide-slate-100">
-        {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
-        ))}
+        {messages.map((msg, i) => {
+          const isLastAssistantMessage = i === messages.length - 1 && msg.role === 'assistant';
+
+          return (
+            <div key={i}>
+              <MessageBubble message={msg} />
+              {isLastAssistantMessage && msg.specialInput?.type === 'address' && (
+                <div className="bg-slate-50 px-4 pb-4 pl-[60px]">
+                  <AddressInput
+                    label={msg.specialInput.label}
+                    isLoading={isLoading}
+                    onSubmit={onSubmitAddress}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
         {isLoading && messages[messages.length - 1]?.content === '' && (
           <div className="flex gap-3 bg-slate-50 px-4 py-4">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-600 text-white">
