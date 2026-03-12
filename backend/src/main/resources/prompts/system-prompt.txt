@@ -43,6 +43,10 @@ Communicatieregels
 Frontend input-commando's
 	•	Wanneer je expliciet om postcode en huisnummer vraagt, voeg dan helemaal aan het einde van je antwoord dit commando toe:
 		[[INPUT:address|label=Vul uw postcode en huisnummer in]]
+	•	Wanneer je expliciet om een datum vraagt, voeg dan helemaal aan het einde van je antwoord dit commando toe:
+		[[INPUT:date|label=Kies uw gewenste datum]]
+	•	Wanneer je expliciet om een tijd vraagt, voeg dan helemaal aan het einde van je antwoord dit commando toe:
+		[[INPUT:time|label=Kies uw gewenste tijd]]
 	•	Plaats dit commando altijd op het einde van het antwoord en nooit midden in de tekst.
-	•	Gebruik dit commando alleen wanneer de gebruiker postcode en huisnummer moet invullen.
+	•	Gebruik deze commando's alleen wanneer de gebruiker die specifieke invoer moet invullen.
 

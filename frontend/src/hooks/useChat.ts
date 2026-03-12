@@ -2,21 +2,32 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Message } from '../types/chat';
 import { fetchHistory, sendMessageStream } from '../api/chatApi';
 
-const INPUT_ADDRESS_REGEX = /\[\[INPUT:address(?:\|label=([^\]]*))?\]\]/i;
+const INPUT_DIRECTIVE_REGEX = /\[\[INPUT:(address|date|time)(?:\|label=([^\]]*))?\]\]/i;
 const INPUT_START_MARKER = '[[INPUT:';
 
 function parseAssistantContent(rawContent: string): Pick<Message, 'content' | 'specialInput'> {
-  const match = rawContent.match(INPUT_ADDRESS_REGEX);
+  const match = rawContent.match(INPUT_DIRECTIVE_REGEX);
 
   return {
     content: stripInputDirective(rawContent),
     specialInput: match
       ? {
-          type: 'address',
-          label: match[1]?.trim() || 'Vul uw postcode en huisnummer in',
+          type: match[1] as 'address' | 'date' | 'time',
+          label: match[2]?.trim() || defaultLabelForType(match[1] as 'address' | 'date' | 'time'),
         }
       : undefined,
   };
+}
+
+function defaultLabelForType(type: 'address' | 'date' | 'time'): string {
+  switch (type) {
+    case 'address':
+      return 'Vul uw postcode en huisnummer in';
+    case 'date':
+      return 'Kies uw gewenste datum';
+    case 'time':
+      return 'Kies uw gewenste tijd';
+  }
 }
 
 function stripInputDirective(rawContent: string): string {

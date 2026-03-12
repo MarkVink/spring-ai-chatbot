@@ -1,18 +1,53 @@
 import { useRef, useEffect } from 'react';
 import type { Message } from '../types/chat';
 import AddressInput from './AddressInput';
+import { DateInput } from './DateInput';
 import MessageBubble from './MessageBubble';
+import TimeInput from './TimeInput';
 import TypingIndicator from './TypingIndicator';
 import { CalendarCheck, MapPin, Clock, CheckCircle2 } from 'lucide-react';
 
 interface ChatWindowProps {
   messages: Message[];
   isLoading: boolean;
-  onSubmitAddress: (message: string) => void;
+  onSubmitSpecialInput: (message: string) => void;
 }
 
-export default function ChatWindow({ messages, isLoading, onSubmitAddress }: ChatWindowProps) {
+export default function ChatWindow({ messages, isLoading, onSubmitSpecialInput }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const renderSpecialInput = (message: Message) => {
+    if (!message.specialInput) {
+      return null;
+    }
+
+    switch (message.specialInput.type) {
+      case 'address':
+        return (
+          <AddressInput
+            label={message.specialInput.label}
+            isLoading={isLoading}
+            onSubmit={onSubmitSpecialInput}
+          />
+        );
+      case 'date':
+        return (
+          <DateInput
+            label={message.specialInput.label}
+            isLoading={isLoading}
+            onSubmit={onSubmitSpecialInput}
+          />
+        );
+      case 'time':
+        return (
+          <TimeInput
+            label={message.specialInput.label}
+            isLoading={isLoading}
+            onSubmit={onSubmitSpecialInput}
+          />
+        );
+    }
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -67,13 +102,9 @@ export default function ChatWindow({ messages, isLoading, onSubmitAddress }: Cha
           return (
             <div key={i}>
               <MessageBubble message={msg} />
-              {isLastAssistantMessage && msg.specialInput?.type === 'address' && (
+              {isLastAssistantMessage && msg.specialInput && (
                 <div className="bg-slate-50 px-4 pb-4 pl-[60px]">
-                  <AddressInput
-                    label={msg.specialInput.label}
-                    isLoading={isLoading}
-                    onSubmit={onSubmitAddress}
-                  />
+                  {renderSpecialInput(msg)}
                 </div>
               )}
             </div>

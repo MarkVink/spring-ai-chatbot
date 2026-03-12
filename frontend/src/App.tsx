@@ -144,7 +144,7 @@ export default function App() {
       <ChatWindow
         messages={messages}
         isLoading={isLoading}
-        onSubmitAddress={(message) => sendMessage(message, selectedModel)}
+        onSubmitSpecialInput={(message) => sendMessage(message, selectedModel)}
       />
 
       {/* Input */}
