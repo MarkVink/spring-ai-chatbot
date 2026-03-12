@@ -12,7 +12,8 @@ public class WebConfig implements WebFluxConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:5173",
-                        "https://*.trycloudflare.com"
+                        "https://*.trycloudflare.com",
+                        "https://*.markvink.com"
                 )
                 .allowedMethods("*")
                 .allowedHeaders("*")

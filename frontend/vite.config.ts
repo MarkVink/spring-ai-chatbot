@@ -8,7 +8,7 @@ const backendTarget = process.env.VITE_BACKEND_URL || 'http://localhost:8080'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    allowedHosts: ['.trycloudflare.com'],
+    allowedHosts: ['.trycloudflare.com', '.markvink.com'],
     proxy: {
       '/api': {
         target: backendTarget,
