@@ -2,6 +2,9 @@ package com.example.springaichatbot.service;
 
 import com.example.springaichatbot.controller.MessageDto;
 import com.example.springaichatbot.controller.ModelGroup;
+import com.example.springaichatbot.tools.AppointmentBookingTool;
+import com.example.springaichatbot.tools.DateTimeTools;
+import com.example.springaichatbot.tools.EmailConfirmationTool;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -25,6 +28,7 @@ public class ChatService {
     private final ChatClient remoteChatClient;
     private final ChatClient localChatClient;
     private final ChatMemory chatMemory;
+    private final EmailService emailService;
     private final Resource systemPromptResource;
     private final List<String> remoteModels;
     private final List<String> localModels;
@@ -36,6 +40,7 @@ public class ChatService {
             @Qualifier("remoteChatClient") ChatClient remoteChatClient,
             @Qualifier("localChatClient") ChatClient localChatClient,
             ChatMemory chatMemory,
+            EmailService emailService,
             @Value("${app.system-prompt-file}") Resource systemPromptResource,
             @Value("${app.models-remote}") List<String> remoteModels,
             @Value("${app.models-local}") List<String> localModels,
@@ -44,6 +49,7 @@ public class ChatService {
         this.remoteChatClient = remoteChatClient;
         this.localChatClient = localChatClient;
         this.chatMemory = chatMemory;
+        this.emailService = emailService;
         this.systemPromptResource = systemPromptResource;
         this.remoteModels = remoteModels.stream().map(String::trim).filter(StringUtils::hasText).toList();
         this.localModels = localModels.stream().map(String::trim).filter(StringUtils::hasText).toList();
@@ -102,6 +108,7 @@ public class ChatService {
         ChatClient.ChatClientRequestSpec request = client.prompt()
                 .system(systemPrompt)
                 .user(userMessage)
+                .tools(new DateTimeTools(), new AppointmentBookingTool(), new EmailConfirmationTool(emailService))
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())
@@ -121,6 +128,7 @@ public class ChatService {
         ChatClient.ChatClientRequestSpec request = client.prompt()
                 .system(systemPrompt)
                 .user(userMessage)
+                .tools(new DateTimeTools(), new AppointmentBookingTool(), new EmailConfirmationTool(emailService))
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())

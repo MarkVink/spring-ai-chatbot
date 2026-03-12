@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Message } from '../types/chat';
 import { fetchHistory, sendMessageStream } from '../api/chatApi';
 
-const INPUT_DIRECTIVE_REGEX = /\[\[INPUT:(address|date|time)(?:\|label=([^\]]*))?\]\]/i;
+const INPUT_DIRECTIVE_REGEX = /\[\[INPUT:(address|date|time|email)(?:\|label=([^\]]*))?\]\]/i;
 const INPUT_START_MARKER = '[[INPUT:';
 
 function parseAssistantContent(rawContent: string): Pick<Message, 'content' | 'specialInput'> {
@@ -12,14 +12,14 @@ function parseAssistantContent(rawContent: string): Pick<Message, 'content' | 's
     content: stripInputDirective(rawContent),
     specialInput: match
       ? {
-          type: match[1] as 'address' | 'date' | 'time',
-          label: match[2]?.trim() || defaultLabelForType(match[1] as 'address' | 'date' | 'time'),
+          type: match[1] as 'address' | 'date' | 'time' | 'email',
+          label: match[2]?.trim() || defaultLabelForType(match[1] as 'address' | 'date' | 'time' | 'email'),
         }
       : undefined,
   };
 }
 
-function defaultLabelForType(type: 'address' | 'date' | 'time'): string {
+function defaultLabelForType(type: 'address' | 'date' | 'time' | 'email'): string {
   switch (type) {
     case 'address':
       return 'Vul uw postcode en huisnummer in';
@@ -27,6 +27,8 @@ function defaultLabelForType(type: 'address' | 'date' | 'time'): string {
       return 'Kies uw gewenste datum';
     case 'time':
       return 'Kies uw gewenste tijd';
+    case 'email':
+      return 'Vul uw e-mailadres in';
   }
 }
 

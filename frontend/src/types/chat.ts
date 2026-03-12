@@ -1,5 +1,5 @@
 export interface SpecialInput {
-  type: 'address' | 'date' | 'time';
+  type: 'address' | 'date' | 'time' | 'email';
   label: string;
 }
 
