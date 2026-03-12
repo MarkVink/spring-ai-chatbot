@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -35,6 +36,7 @@ public class ChatService {
     private final String defaultModel;
     private final String baseSystemPrompt;
     private final Map<String, String> sessionReferenceDateTime = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> sessionCalledTools = new ConcurrentHashMap<>();
 
     public ChatService(
             @Qualifier("remoteChatClient") ChatClient remoteChatClient,
@@ -104,11 +106,12 @@ public class ChatService {
         String resolvedModel = resolveModel(model);
         ChatClient client = getChatClientForModel(resolvedModel);
         String systemPrompt = buildSystemPromptWithReferenceDateTime(sessionId);
+        Set<String> calledTools = getCalledToolsForSession(sessionId);
 
         ChatClient.ChatClientRequestSpec request = client.prompt()
                 .system(systemPrompt)
                 .user(userMessage)
-                .tools(new DateTimeTools(), new AppointmentBookingTool(), new EmailConfirmationTool(emailService))
+                .tools(new DateTimeTools(), new AppointmentBookingTool(calledTools), new EmailConfirmationTool(emailService, calledTools))
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())
@@ -124,11 +127,12 @@ public class ChatService {
         String resolvedModel = resolveModel(model);
         ChatClient client = getChatClientForModel(resolvedModel);
         String systemPrompt = buildSystemPromptWithReferenceDateTime(sessionId);
+        Set<String> calledTools = getCalledToolsForSession(sessionId);
 
         ChatClient.ChatClientRequestSpec request = client.prompt()
                 .system(systemPrompt)
                 .user(userMessage)
-                .tools(new DateTimeTools(), new AppointmentBookingTool(), new EmailConfirmationTool(emailService))
+                .tools(new DateTimeTools(), new AppointmentBookingTool(calledTools), new EmailConfirmationTool(emailService, calledTools))
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
                         .conversationId(sessionId)
                         .build())
@@ -169,6 +173,10 @@ public class ChatService {
             return localChatClient;
         }
         return remoteChatClient;
+    }
+
+    private Set<String> getCalledToolsForSession(String sessionId) {
+        return sessionCalledTools.computeIfAbsent(sessionId, k -> ConcurrentHashMap.newKeySet());
     }
 
     private String buildSystemPromptWithReferenceDateTime(String sessionId) {
