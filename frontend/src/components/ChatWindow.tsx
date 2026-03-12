@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import type { Message } from '../types/chat';
 import AddressInput from './AddressInput';
 import { DateInput } from './DateInput';
+import EmailInput from './EmailInput';
 import MessageBubble from './MessageBubble';
 import TimeInput from './TimeInput';
 import TypingIndicator from './TypingIndicator';
@@ -41,6 +42,14 @@ export default function ChatWindow({ messages, isLoading, onSubmitSpecialInput }
       case 'time':
         return (
           <TimeInput
+            label={message.specialInput.label}
+            isLoading={isLoading}
+            onSubmit={onSubmitSpecialInput}
+          />
+        );
+      case 'email':
+        return (
+          <EmailInput
             label={message.specialInput.label}
             isLoading={isLoading}
             onSubmit={onSubmitSpecialInput}
